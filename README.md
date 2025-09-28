@@ -1,6 +1,7 @@
 # ScopetrexVGA
  Proof of concept Pi Pico2 based X-Y oscilloscope with Z (blank) inputs. Allows display the image from the [Scopetrex](https://github.com/schlae/scopetrex) board on a regular VGA (DVI/HDMI) monitor without an analog XY dual-beam oscilloscope or vector monitor. 
- ![Uploading photo_2025-09-08_11-06-36.jpg…]()
+
+ <img src="https://github.com/user-attachments/assets/7360ae76-5264-40dd-a216-ca9f95501e03"></img> 
 
  <img src="https://github.com/user-attachments/assets/d94c6e3c-7395-47de-95c2-1e51f0842c9f" width="45%"></img> <img src="https://github.com/user-attachments/assets/068e893a-2245-4e3f-aef4-223be2b3dde2" width="45%"></img> 
 
@@ -30,4 +31,5 @@ For display image i am using [DispHSTX](https://www.breatharian.eu/hw/disphstx/i
 Currently i am using VGA connection and VGA monitor but nothing prevents using a connection via DVI/HDMI (except for a small config.h firmware edit).
 
 ## Software basics
-Pico 2 a little overclocked by DispHSTX library (using vmodetime_640x350_fast, _fast meaning SYS_CLK = 252MHz). ADC_CLK running at ~125MHz, configured as continuous ADC channel sampling (4 channel) with two chained DMA channel that transfer from the ADC FIFO to the respective buffer and the ring wraping causes each one to start on each cycle at the beginning of its write buffer [as described here](https://forums.raspberrypi.com/viewtopic.php?p=1861895#p1861895). Channel 4 of the ADC is empty and is needed to align the DMA buffers. So, ADC sampling at: 125000000/96/4=325520 KHz. If either of the two buffers is filled with data, the interrupt sets the new_data flag, indicating to the main loop that it can draw points from the buffer onto the screen.
+Pico 2 a little overclocked by DispHSTX library (using vmodetime_640x350_fast, _fast meaning SYS_CLK = 252MHz). ADC_CLK running at ~125MHz, configured as continuous ADC channel sampling (4 channel) with two chained DMA channel that transfer from the ADC FIFO to the respective buffer and the ring wraping causes each one to start on each cycle at the beginning of its write buffer [as described here](https://forums.raspberrypi.com/viewtopic.php?p=1861895#p1861895). Channel 4 of the ADC is empty and is needed to align the DMA buffers. So, ADC sampling at: 125000000/96/4=325520 Hz. Perhaps you only need to sample three channels, then the speed will be around 125000000/96/3 = 434 kHz, but you will need to programmatically handle the transition from one capture buffer to another to update X-Y-Z data. If either of the two buffers is filled with data, the interrupt sets the *new_data* flag, indicating to the main loop that it can draw points from the buffer onto the screen. ADC capture buffers format is X,Y,Z,Empty;X,Y,Z,Empty and so on.
+In main loop we waiting *new_data* flag then plot dots from capture_buffer to the backbuffer named *Box*. Then apply some blur to Box backbuffer and copy its contents to framebuffer. Thats all.

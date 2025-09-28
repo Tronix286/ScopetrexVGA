@@ -1,5 +1,10 @@
 # ScopetrexVGA
- Proof of concept Pi Pico2 based X-Y oscilloscope with Z (blank) inputs. Allows display the image from the [Scopetrex](https://github.com/schlae/scopetrex) board on a regular VGA (DVI/HDMI) monitor without an analog XY dual-beam oscilloscope or vector monitor. Current status: it's working but not ideal but it's better than nothing.
+ Proof of concept Pi Pico2 based X-Y oscilloscope with Z (blank) inputs. Allows display the image from the [Scopetrex](https://github.com/schlae/scopetrex) board on a regular VGA (DVI/HDMI) monitor without an analog XY dual-beam oscilloscope or vector monitor. 
+ ![Uploading photo_2025-09-08_11-06-36.jpg…]()
+
+ <img src="https://github.com/user-attachments/assets/d94c6e3c-7395-47de-95c2-1e51f0842c9f" width="45%"></img> <img src="https://github.com/user-attachments/assets/068e893a-2245-4e3f-aef4-223be2b3dde2" width="45%"></img> 
+
+ Current status: it's working but not ideal but it's better than nothing.
 
 ## Hardware
  Pico 2 was chosen due to its improved ADC performance compared to the first Pico, as well as the larger amount of memory required for storing samples and a second framebuffer.
@@ -25,4 +30,4 @@ For display image i am using [DispHSTX](https://www.breatharian.eu/hw/disphstx/i
 Currently i am using VGA connection and VGA monitor but nothing prevents using a connection via DVI/HDMI (except for a small config.h firmware edit).
 
 ## Software basics
-Pico 2 a little overclocked by DispHSTX library (using vmodetime_640x350_fast, _fast meaning SYS_CLK = 252MHz). ADC_CLK running at ~125MHz, configured as continuous ADC channel sampling (4 channel) with two chained DMA channel that transfer from the ADC FIFO to the respective buffer and the ring wraping causes each one to start on each cycle at the beginning of its write buffer. Channel 4 of the ADC is empty and is needed to align the DMA buffers. So, ADC sampling at: 125000000/96/4=325520 KHz. If either of the two buffers is filled with data, the interrupt sets the new_data flag, indicating to the main loop that it can draw points from the buffer onto the screen.
+Pico 2 a little overclocked by DispHSTX library (using vmodetime_640x350_fast, _fast meaning SYS_CLK = 252MHz). ADC_CLK running at ~125MHz, configured as continuous ADC channel sampling (4 channel) with two chained DMA channel that transfer from the ADC FIFO to the respective buffer and the ring wraping causes each one to start on each cycle at the beginning of its write buffer [as described here](https://forums.raspberrypi.com/viewtopic.php?p=1861895#p1861895). Channel 4 of the ADC is empty and is needed to align the DMA buffers. So, ADC sampling at: 125000000/96/4=325520 KHz. If either of the two buffers is filled with data, the interrupt sets the new_data flag, indicating to the main loop that it can draw points from the buffer onto the screen.

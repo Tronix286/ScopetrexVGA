@@ -21,3 +21,8 @@ Example of my front-end prototyping board: </br>
 ### VGA output stage
 For display image i am using [DispHSTX](https://www.breatharian.eu/hw/disphstx/index_en.html) VGA/DVI RP2350 library from [Miroslav Nemecek](https://github.com/Panda381/DispHSTX), so schematic wiring diagram is exactly the same as shown on DispHSTX web site:
 <img src="https://github.com/Panda381/DispHSTX/blob/main/_doc/DispHSTX_diagram.jpg" />
+
+Currently i am using VGA connection and VGA monitor but nothing prevents using a connection via DVI/HDMI (except for a small config.h firmware edit).
+
+## Software basics
+Pico 2 a little overclocked by DispHSTX library (using vmodetime_640x350_fast, _fast meaning SYS_CLK = 252MHz). ADC_CLK running at ~125MHz, configured as continuous ADC channel sampling (4 channel) with two chained DMA channel that transfer from the ADC FIFO to the respective buffer and the ring wraping causes each one to start on each cycle at the beginning of its write buffer. Channel 4 of the ADC is empty and is needed to align the DMA buffers. So, ADC sampling at: 125000000/96/4=325520 KHz. If either of the two buffers is filled with data, the interrupt sets the new_data flag, indicating to the main loop that it can draw points from the buffer onto the screen.

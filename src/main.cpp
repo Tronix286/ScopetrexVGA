@@ -109,8 +109,10 @@ void FASTCODE NOFLASH (smooth())
 {
 		for (uint32_t i=WWIDTH; i<(WWIDTH)*(HHEIGHT)-1-WWIDTH; i++)
 		{
-			if (Box[i]>3) Box[i]=Box[i]-4; else Box[i] = 0;
+			if (Box[i]>9) Box[i]=Box[i]-10; else Box[i] = 0;
 		}
+		memset(Box,0,WWIDTH);
+		memset(Box+WWIDTH*HHEIGHT-WWIDTH,0,WWIDTH);		
 }
 
 void FASTCODE NOFLASH (bloor())
@@ -122,9 +124,10 @@ void FASTCODE NOFLASH (bloor())
 		for (uint32_t i=WWIDTH; i<(WWIDTH)*(HHEIGHT)-1-WWIDTH; i++)
 		{
 			//Box[i] = (Box[i-1]+Box[i+1]+Box[i+WWIDTH-1]+Box[i+WWIDTH+1]+Box[i-WWIDTH-1]+Box[i-WWIDTH+1]+Box[i+WWIDTH]+Box[i-WWIDTH])/10;
-			Box[i] = (Box[i]+Box[i-1]+Box[i+1]+Box[i+WWIDTH]+Box[i-WWIDTH])/6;
+			Box[i] = (Box[i-1]+Box[i+1]+Box[i+WWIDTH]+Box[i-WWIDTH])/5;
 		}
-		
+		memset(Box,0,WWIDTH);
+		memset(Box+WWIDTH*HHEIGHT-WWIDTH,0,WWIDTH);		
 }
 
 void FASTCODE NOFLASH (DrawDot)(uint16_t x, uint16_t y, uint8_t col)
@@ -313,7 +316,14 @@ int FASTCODE NOFLASH (main())
 		//dma_channel_wait_for_finish_blocking(dma_chan1);
 		if(new_data)
 		{
-/*				float k = 0.3;
+		//if (cntr % 4 == 0)
+		//{
+						//DispHstxCore1Exec(bloor);
+						DispHstxCore1Exec(smooth);
+						//bloor();
+		//}
+				// simple recursive (IIR) filter
+				float k = 0.4;
 				uint16_t old_valx = data_buf[0];
 				uint16_t old_valy = data_buf[1];
 				uint16_t old_valz = data_buf[2];
@@ -321,16 +331,17 @@ int FASTCODE NOFLASH (main())
 				{
 					old_valx = k * data_buf[i] + (1.0 - k) * old_valx;
 					old_valy = k * data_buf[i+1] + (1.0 - k) * old_valy;
-					old_valz = k * data_buf[i+2] + (1.0 - k) * old_valz;
+					//old_valz = k * data_buf[i+2] + (1.0 - k) * old_valz;
 					data_buf[i] = old_valx;
 					data_buf[i+1] = old_valy;
-					data_buf[i+2] = old_valz;
-				}*/
+					//data_buf[i+2] = old_valz;
+				}
 				//DispHstxWaitVSync();
 				for(uint16_t i=0; i < CAPTURE_DEPTH; i=i+4)
 				{
 					#if 1
 					if (data_buf[i+2] > 512)
+						//DrawDot(data_buf[i]/dw-WWIDTH/2,data_buf[i+1]/dh-HHEIGHT/2-90,data_buf[i+2]*64/2048);
 						DrawDot(data_buf[i]/dw-WWIDTH/2,data_buf[i+1]/dh-HHEIGHT/2-90,63);
 					//else
 					//	DrawPoint(capture_buf1[i]/(2048/WWIDTH)-WWIDTH/2,capture_buf1[i+1]/(2048/HHEIGHT)-HHEIGHT/2-70,COL_GRAY4);
@@ -356,11 +367,6 @@ int FASTCODE NOFLASH (main())
 		//dma_channel_start(chan32);
 		//dma_channel_wait_for_finish_blocking(chan32);
 						//bloor();
-		if (cntr % 5 == 0)
-		{
-						DispHstxCore1Exec(bloor);
-						//bloor();
-		}
 						//DispHstxCore1Wait();
 			new_data = false;
 #if DISP_FPS			// 1=display FPS
